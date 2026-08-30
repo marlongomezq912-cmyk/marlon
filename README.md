@@ -1140,8 +1140,1640 @@ def ver_facturacion():
 
 
 # ==========================================================
+# EJECUTAR APLICAC
+
+# =========================
+# ARCHIVO: app.py
+# =========================
+
+from flask import Flask, render_template, redirect, url_for, flash
+
+from forms.producto_form import ProductoForm
+from forms.cliente_form import ClienteForm
+from forms.proveedor_form import ProveedorForm
+from forms.facturacion_form import FacturacionForm
+
+app = Flask(__name__)
+
+# Clave necesaria para Flask-WTF y protección CSRF
+app.config["SECRET_KEY"] = "clave-secreta-proyecto-integrador-2026"
+
+# Datos temporales. No se utiliza base de datos en esta semana.
+productos = []
+clientes = []
+proveedores = []
+facturas = []
+
+
+# =========================
+# INICIO
+# =========================
+
+@app.route("/")
+def index():
+    return render_template(
+        "index.html",
+        productos=productos,
+        clientes=clientes,
+        proveedores=proveedores,
+        facturas=facturas
+    )
+
+
+# =========================
+# PRODUCTOS
+# =========================
+
+@app.route("/productos")
+def productos_lista():
+    return render_template(
+        "productos.html",
+        productos=productos
+    )
+
+
+@app.route("/productos/nuevo", methods=["GET", "POST"])
+def nuevo_producto():
+
+    form = ProductoForm()
+
+    if form.validate_on_submit():
+
+        producto = {
+            "nombre": form.nombre.data,
+            "descripcion": form.descripcion.data,
+            "precio": form.precio.data,
+            "stock": form.stock.data
+        }
+
+        productos.append(producto)
+
+        flash(
+            "Producto registrado correctamente.",
+            "success"
+        )
+
+        return redirect(url_for("productos_lista"))
+
+    return render_template(
+        "formulario_producto.html",
+        form=form
+    )
+
+
+# =========================
+# CLIENTES
+# =========================
+
+@app.route("/clientes")
+def clientes_lista():
+    return render_template(
+        "clientes.html",
+        clientes=clientes
+    )
+
+
+@app.route("/clientes/nuevo", methods=["GET", "POST"])
+def nuevo_cliente():
+
+    form = ClienteForm()
+
+    if form.validate_on_submit():
+
+        cliente = {
+            "nombre": form.nombre.data,
+            "email": form.email.data,
+            "telefono": form.telefono.data,
+            "direccion": form.direccion.data
+        }
+
+        clientes.append(cliente)
+
+        flash(
+            "Cliente registrado correctamente.",
+            "success"
+        )
+
+        return redirect(url_for("clientes_lista"))
+
+    return render_template(
+        "formulario_cliente.html",
+        form=form
+    )
+
+
+# =========================
+# PROVEEDORES
+# =========================
+
+@app.route("/proveedores")
+def proveedores_lista():
+    return render_template(
+        "proveedores.html",
+        proveedores=proveedores
+    )
+
+
+@app.route("/proveedores/nuevo", methods=["GET", "POST"])
+def nuevo_proveedor():
+
+    form = ProveedorForm()
+
+    if form.validate_on_submit():
+
+        proveedor = {
+            "empresa": form.empresa.data,
+            "contacto": form.contacto.data,
+            "email": form.email.data,
+            "telefono": form.telefono.data,
+            "direccion": form.direccion.data
+        }
+
+        proveedores.append(proveedor)
+
+        flash(
+            "Proveedor registrado correctamente.",
+            "success"
+        )
+
+        return redirect(url_for("proveedores_lista"))
+
+    return render_template(
+        "formulario_proveedor.html",
+        form=form
+    )
+
+
+# =========================
+# FACTURACIÓN
+# =========================
+
+@app.route("/facturacion")
+def facturacion_lista():
+    return render_template(
+        "facturacion.html",
+        facturas=facturas
+    )
+
+
+@app.route("/facturacion/nueva", methods=["GET", "POST"])
+def nueva_factura():
+
+    form = FacturacionForm()
+
+    if form.validate_on_submit():
+
+        total = form.cantidad.data * form.precio.data
+
+        factura = {
+            "cliente": form.cliente.data,
+            "producto": form.producto.data,
+            "cantidad": form.cantidad.data,
+            "precio": form.precio.data,
+            "total": total
+        }
+
+        facturas.append(factura)
+
+        flash(
+            "Factura registrada correctamente.",
+            "success"
+        )
+
+        return redirect(url_for("facturacion_lista"))
+
+    return render_template(
+        "formulario_facturacion.html",
+        form=form
+    )
+
+
+# =========================
 # EJECUTAR APLICACIÓN
-# ==========================================================
+# =========================
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+
+# ============================================================
+# ARCHIVO: forms/__init__.py
+# ============================================================
+
+# Formularios del Proyecto Integrador
+
+
+# ============================================================
+# ARCHIVO: forms/producto_form.py
+# ============================================================
+
+from flask_wtf import FlaskForm
+from wtforms import StringField, FloatField, IntegerField, SubmitField
+from wtforms.validators import DataRequired, Length, NumberRange
+
+
+class ProductoForm(FlaskForm):
+
+    nombre = StringField(
+        "Nombre del producto",
+        validators=[
+            DataRequired(
+                message="El nombre del producto es obligatorio."
+            ),
+            Length(
+                min=3,
+                max=100,
+                message="El nombre debe tener entre 3 y 100 caracteres."
+            )
+        ]
+    )
+
+    descripcion = StringField(
+        "Descripción",
+        validators=[
+            DataRequired(
+                message="La descripción es obligatoria."
+            ),
+            Length(
+                min=5,
+                max=200,
+                message="La descripción debe tener entre 5 y 200 caracteres."
+            )
+        ]
+    )
+
+    precio = FloatField(
+        "Precio",
+        validators=[
+            DataRequired(
+                message="El precio es obligatorio."
+            ),
+            NumberRange(
+                min=0.01,
+                message="El precio debe ser mayor que 0."
+            )
+        ]
+    )
+
+    stock = IntegerField(
+        "Stock",
+        validators=[
+            DataRequired(
+                message="El stock es obligatorio."
+            ),
+            NumberRange(
+                min=0,
+                message="El stock no puede ser negativo."
+            )
+        ]
+    )
+
+    submit = SubmitField("Guardar producto")
+
+
+# ============================================================
+# ARCHIVO: forms/cliente_form.py
+# ============================================================
+
+from flask_wtf import FlaskForm
+from wtforms import StringField, EmailField, TelField, SubmitField
+from wtforms.validators import DataRequired, Length, Email
+
+
+class ClienteForm(FlaskForm):
+
+    nombre = StringField(
+        "Nombre completo",
+        validators=[
+            DataRequired(
+                message="El nombre es obligatorio."
+            ),
+            Length(
+                min=3,
+                max=100,
+                message="El nombre debe tener entre 3 y 100 caracteres."
+            )
+        ]
+    )
+
+    email = EmailField(
+        "Correo electrónico",
+        validators=[
+            DataRequired(
+                message="El correo electrónico es obligatorio."
+            ),
+            Email(
+                message="Ingrese un correo electrónico válido."
+            )
+        ]
+    )
+
+    telefono = TelField(
+        "Teléfono",
+        validators=[
+            DataRequired(
+                message="El teléfono es obligatorio."
+            ),
+            Length(
+                min=7,
+                max=15,
+                message="El teléfono debe tener entre 7 y 15 caracteres."
+            )
+        ]
+    )
+
+    direccion = StringField(
+        "Dirección",
+        validators=[
+            DataRequired(
+                message="La dirección es obligatoria."
+            ),
+            Length(
+                min=5,
+                max=150,
+                message="La dirección debe tener entre 5 y 150 caracteres."
+            )
+        ]
+    )
+
+    submit = SubmitField("Guardar cliente")
+
+
+# ============================================================
+# ARCHIVO: forms/proveedor_form.py
+# ============================================================
+
+from flask_wtf import FlaskForm
+from wtforms import StringField, EmailField, TelField, SubmitField
+from wtforms.validators import DataRequired, Length, Email
+
+
+class ProveedorForm(FlaskForm):
+
+    empresa = StringField(
+        "Empresa",
+        validators=[
+            DataRequired(
+                message="El nombre de la empresa es obligatorio."
+            ),
+            Length(
+                min=3,
+                max=100,
+                message="La empresa debe tener entre 3 y 100 caracteres."
+            )
+        ]
+    )
+
+    contacto = StringField(
+        "Persona de contacto",
+        validators=[
+            DataRequired(
+                message="El contacto es obligatorio."
+            ),
+            Length(
+                min=3,
+                max=100,
+                message="Ingrese un nombre válido."
+            )
+        ]
+    )
+
+    email = EmailField(
+        "Correo electrónico",
+        validators=[
+            DataRequired(
+                message="El correo electrónico es obligatorio."
+            ),
+            Email(
+                message="Ingrese un correo electrónico válido."
+            )
+        ]
+    )
+
+    telefono = TelField(
+        "Teléfono",
+        validators=[
+            DataRequired(
+                message="El teléfono es obligatorio."
+            ),
+            Length(
+                min=7,
+                max=15,
+                message="El teléfono debe tener entre 7 y 15 caracteres."
+            )
+        ]
+    )
+
+    direccion = StringField(
+        "Dirección",
+        validators=[
+            DataRequired(
+                message="La dirección es obligatoria."
+            ),
+            Length(
+                min=5,
+                max=150,
+                message="La dirección debe tener entre 5 y 150 caracteres."
+            )
+        ]
+    )
+
+    submit = SubmitField("Guardar proveedor")
+
+
+# ============================================================
+# ARCHIVO: forms/facturacion_form.py
+# ============================================================
+
+from flask_wtf import FlaskForm
+from wtforms import StringField, FloatField, IntegerField, SubmitField
+from wtforms.validators import DataRequired, NumberRange
+
+
+class FacturacionForm(FlaskForm):
+
+    cliente = StringField(
+        "Cliente",
+        validators=[
+            DataRequired(
+                message="El cliente es obligatorio."
+            )
+        ]
+    )
+
+    producto = StringField(
+        "Producto",
+        validators=[
+            DataRequired(
+                message="El producto es obligatorio."
+            )
+        ]
+    )
+
+    cantidad = IntegerField(
+        "Cantidad",
+        validators=[
+            DataRequired(
+                message="La cantidad es obligatoria."
+            ),
+            NumberRange(
+                min=1,
+                message="La cantidad debe ser mayor o igual a 1."
+            )
+        ]
+    )
+
+    precio = FloatField(
+        "Precio unitario",
+        validators=[
+            DataRequired(
+                message="El precio es obligatorio."
+            ),
+            NumberRange(
+                min=0.01,
+                message="El precio debe ser mayor que 0."
+            )
+        ]
+    )
+
+    submit = SubmitField("Generar factura")
+
+
+# ============================================================
+# ARCHIVO: templates/base.html
+# ============================================================
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Proyecto Integrador</title>
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/style.css') }}">
+
+</head>
+
+<body>
+
+    {% include "components/navbar.html" %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            <div class="container mt-3">
+
+                {% for category, message in messages %}
+
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+
+    {% endwith %}
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    {% include "components/footer.html" %}
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+</body>
+
+</html>
+
+
+# ============================================================
+# ARCHIVO: templates/components/navbar.html
+# ============================================================
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+
+    <div class="container">
+
+        <a class="navbar-brand"
+           href="{{ url_for('index') }}">
+            Proyecto Integrador
+        </a>
+
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#menu">
+
+            <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+        <div class="collapse navbar-collapse" id="menu">
+
+            <ul class="navbar-nav ms-auto">
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ url_for('index') }}">
+                        Inicio
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ url_for('productos_lista') }}">
+                        Productos
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ url_for('clientes_lista') }}">
+                        Clientes
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ url_for('proveedores_lista') }}">
+                        Proveedores
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       href="{{ url_for('facturacion_lista') }}">
+                        Facturación
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+# ============================================================
+# ARCHIVO: templates/components/footer.html
+# ============================================================
+
+<footer class="bg-dark text-white text-center p-3 mt-5">
+
+    <p class="mb-0">
+        Proyecto Integrador - Desarrollo de Aplicaciones Web
+    </p>
+
+    <p class="mb-0">
+        Avance 11/16 - Flask-WTF y WTForms
+    </p>
+
+</footer>
+
+
+# ============================================================
+# ARCHIVO: templates/index.html
+# ============================================================
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="text-center">
+
+        <h1>Proyecto Integrador</h1>
+
+        <p class="lead">
+            Sistema de gestión desarrollado con Flask,
+            Jinja2, Flask-WTF y WTForms.
+        </p>
+
+    </div>
+
+    <div class="row mt-5">
+
+        <div class="col-md-3">
+            <div class="card text-center shadow">
+                <div class="card-body">
+
+                    <h5>Productos</h5>
+
+                    <h2>{{ productos|length }}</h2>
+
+                    <a
+                        href="{{ url_for('productos_lista') }}"
+                        class="btn btn-primary">
+                        Ver productos
+                    </a>
+
+                </div>
+            </div>
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="card text-center shadow">
+
+                <div class="card-body">
+
+                    <h5>Clientes</h5>
+
+                    <h2>{{ clientes|length }}</h2>
+
+                    <a
+                        href="{{ url_for('clientes_lista') }}"
+                        class="btn btn-primary">
+                        Ver clientes
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="card text-center shadow">
+
+                <div class="card-body">
+
+                    <h5>Proveedores</h5>
+
+                    <h2>{{ proveedores|length }}</h2>
+
+                    <a
+                        href="{{ url_for('proveedores_lista') }}"
+                        class="btn btn-primary">
+                        Ver proveedores
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-3">
+
+            <div class="card text-center shadow">
+
+                <div class="card-body">
+
+                    <h5>Facturas</h5>
+
+                    <h2>{{ facturas|length }}</h2>
+
+                    <a
+                        href="{{ url_for('facturacion_lista') }}"
+                        class="btn btn-primary">
+                        Ver facturas
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+# ============================================================
+# ARCHIVO: templates/formulario_producto.html
+# ============================================================
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+
+            <h2 class="mb-0">
+                Registrar producto
+            </h2>
+
+        </div>
+
+        <div class="card-body">
+
+            <form method="POST">
+
+                {{ form.hidden_tag() }}
+
+                <div class="mb-3">
+
+                    {{ form.nombre.label(
+                        class="form-label"
+                    ) }}
+
+                    {{ form.nombre(
+                        class="form-control"
+                    ) }}
+
+                    {% for error in form.nombre.errors %}
+
+                        <div class="text-danger">
+                            {{ error }}
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    {{ form.descripcion.label(
+                        class="form-label"
+                    ) }}
+
+                    {{ form.descripcion(
+                        class="form-control"
+                    ) }}
+
+                    {% for error in form.descripcion.errors %}
+
+                        <div class="text-danger">
+                            {{ error }}
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    {{ form.precio.label(
+                        class="form-label"
+                    ) }}
+
+                    {{ form.precio(
+                        class="form-control"
+                    ) }}
+
+                    {% for error in form.precio.errors %}
+
+                        <div class="text-danger">
+                            {{ error }}
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    {{ form.stock.label(
+                        class="form-label"
+                    ) }}
+
+                    {{ form.stock(
+                        class="form-control"
+                    ) }}
+
+                    {% for error in form.stock.errors %}
+
+                        <div class="text-danger">
+                            {{ error }}
+                        </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                {{ form.submit(
+                    class="btn btn-primary"
+                ) }}
+
+                <a
+                    href="{{ url_for('productos_lista') }}"
+                    class="btn btn-secondary">
+                    Cancelar
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+# ============================================================
+# ARCHIVO: templates/productos.html
+# ============================================================
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between">
+
+        <h1>Productos</h1>
+
+        <a
+            href="{{ url_for('nuevo_producto') }}"
+            class="btn btn-primary">
+            Nuevo producto
+        </a>
+
+    </div>
+
+    <hr>
+
+    {% if productos %}
+
+    <div class="table-responsive">
+
+        <table class="table table-striped table-bordered">
+
+            <thead class="table-dark">
+
+                <tr>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Precio</th>
+                    <th>Stock</th>
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for producto in productos %}
+
+                <tr>
+
+                    <td>{{ producto.nombre }}</td>
+
+                    <td>{{ producto.descripcion }}</td>
+
+                    <td>
+                        ${{ "%.2f"|format(producto.precio) }}
+                    </td>
+
+                    <td>{{ producto.stock }}</td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <div class="alert alert-info">
+        No existen productos registrados.
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+
+# ============================================================
+# ARCHIVO: templates/formulario_cliente.html
+# ============================================================
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+
+            <h2>Registrar cliente</h2>
+
+        </div>
+
+        <div class="card-body">
+
+            <form method="POST">
+
+                {{ form.hidden_tag() }}
+
+                <div class="mb-3">
+
+                    {{ form.nombre.label(
+                        class="form-label"
+                    ) }}
+
+                    {{ form.nombre(
+                        class="form-control"
+                    ) }}
+
+                    {% for error in form.nombre.errors %}
+
+                    <div class="text-danger">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    {{ form.email.label(
+                        class="form-label"
+                    ) }}
+
+                    {{ form.email(
+                        class="form-control"
+                    ) }}
+
+                    {% for error in form.email.errors %}
+
+                    <div class="text-danger">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    {{ form.telefono.label(
+                        class="form-label"
+                    ) }}
+
+                    {{ form.telefono(
+                        class="form-control"
+                    ) }}
+
+                    {% for error in form.telefono.errors %}
+
+                    <div class="text-danger">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    {{ form.direccion.label(
+                        class="form-label"
+                    ) }}
+
+                    {{ form.direccion(
+                        class="form-control"
+                    ) }}
+
+                    {% for error in form.direccion.errors %}
+
+                    <div class="text-danger">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                {{ form.submit(
+                    class="btn btn-primary"
+                ) }}
+
+                <a
+                    href="{{ url_for('clientes_lista') }}"
+                    class="btn btn-secondary">
+                    Cancelar
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+# ============================================================
+# ARCHIVO: templates/clientes.html
+# ============================================================
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between">
+
+        <h1>Clientes</h1>
+
+        <a
+            href="{{ url_for('nuevo_cliente') }}"
+            class="btn btn-primary">
+            Nuevo cliente
+        </a>
+
+    </div>
+
+    <hr>
+
+    {% if clientes %}
+
+    <table class="table table-striped table-bordered">
+
+        <thead class="table-dark">
+
+            <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Dirección</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for cliente in clientes %}
+
+            <tr>
+
+                <td>{{ cliente.nombre }}</td>
+                <td>{{ cliente.email }}</td>
+                <td>{{ cliente.telefono }}</td>
+                <td>{{ cliente.direccion }}</td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <div class="alert alert-info">
+        No existen clientes registrados.
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+
+# ============================================================
+# ARCHIVO: templates/formulario_proveedor.html
+# ============================================================
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-primary text-white">
+
+            <h2>Registrar proveedor</h2>
+
+        </div>
+
+        <div class="card-body">
+
+            <form method="POST">
+
+                {{ form.hidden_tag() }}
+
+                <div class="mb-3">
+
+                    {{ form.empresa.label(
+                        class="form-label"
+                    ) }}
+
+                    {{ form.empresa(
+                        class="form-control"
+                    ) }}
+
+                    {% for error in form.empresa.errors %}
+
+                    <div class="text-danger">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    {{ form.contacto.label(
+                        class="form-label"
+                    ) }}
+
+                    {{ form.contacto(
+                        class="form-control"
+                    ) }}
+
+                    {% for error in form.contacto.errors %}
+
+                    <div class="text-danger">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    {{ form.email.label(
+                        class="form-label"
+                    ) }}
+
+                    {{ form.email(
+                        class="form-control"
+                    ) }}
+
+                    {% for error in form.email.errors %}
+
+                    <div class="text-danger">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    {{ form.telefono.label(
+                        class="form-label"
+                    ) }}
+
+                    {{ form.telefono(
+                        class="form-control"
+                    ) }}
+
+                    {% for error in form.telefono.errors %}
+
+                    <div class="text-danger">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    {{ form.direccion.label(
+                        class="form-label"
+                    ) }}
+
+                    {{ form.direccion(
+                        class="form-control"
+                    ) }}
+
+                    {% for error in form.direccion.errors %}
+
+                    <div class="text-danger">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                {{ form.submit(
+                    class="btn btn-primary"
+                ) }}
+
+                <a
+                    href="{{ url_for('proveedores_lista') }}"
+                    class="btn btn-secondary">
+                    Cancelar
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+# ============================================================
+# ARCHIVO: templates/proveedores.html
+# ============================================================
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between">
+
+        <h1>Proveedores</h1>
+
+        <a
+            href="{{ url_for('nuevo_proveedor') }}"
+            class="btn btn-primary">
+            Nuevo proveedor
+        </a>
+
+    </div>
+
+    <hr>
+
+    {% if proveedores %}
+
+    <table class="table table-striped table-bordered">
+
+        <thead class="table-dark">
+
+            <tr>
+                <th>Empresa</th>
+                <th>Contacto</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Dirección</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for proveedor in proveedores %}
+
+            <tr>
+
+                <td>{{ proveedor.empresa }}</td>
+                <td>{{ proveedor.contacto }}</td>
+                <td>{{ proveedor.email }}</td>
+                <td>{{ proveedor.telefono }}</td>
+                <td>{{ proveedor.direccion }}</td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <div class="alert alert-info">
+        No existen proveedores registrados.
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+
+# ============================================================
+# ARCHIVO: templates/formulario_facturacion.html
+# ============================================================
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="card shadow">
+
+        <div class="card-header bg-success text-white">
+
+            <h2>Nueva factura</h2>
+
+        </div>
+
+        <div class="card-body">
+
+            <form method="POST">
+
+                {{ form.hidden_tag() }}
+
+                <div class="mb-3">
+
+                    {{ form.cliente.label(
+                        class="form-label"
+                    ) }}
+
+                    {{ form.cliente(
+                        class="form-control"
+                    ) }}
+
+                    {% for error in form.cliente.errors %}
+
+                    <div class="text-danger">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    {{ form.producto.label(
+                        class="form-label"
+                    ) }}
+
+                    {{ form.producto(
+                        class="form-control"
+                    ) }}
+
+                    {% for error in form.producto.errors %}
+
+                    <div class="text-danger">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    {{ form.cantidad.label(
+                        class="form-label"
+                    ) }}
+
+                    {{ form.cantidad(
+                        class="form-control"
+                    ) }}
+
+                    {% for error in form.cantidad.errors %}
+
+                    <div class="text-danger">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                <div class="mb-3">
+
+                    {{ form.precio.label(
+                        class="form-label"
+                    ) }}
+
+                    {{ form.precio(
+                        class="form-control"
+                    ) }}
+
+                    {% for error in form.precio.errors %}
+
+                    <div class="text-danger">
+                        {{ error }}
+                    </div>
+
+                    {% endfor %}
+
+                </div>
+
+
+                {{ form.submit(
+                    class="btn btn-success"
+                ) }}
+
+                <a
+                    href="{{ url_for('facturacion_lista') }}"
+                    class="btn btn-secondary">
+                    Cancelar
+                </a>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+# ============================================================
+# ARCHIVO: templates/facturacion.html
+# ============================================================
+
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between">
+
+        <h1>Facturación</h1>
+
+        <a
+            href="{{ url_for('nueva_factura') }}"
+            class="btn btn-success">
+            Nueva factura
+        </a>
+
+    </div>
+
+    <hr>
+
+    {% if facturas %}
+
+    <table class="table table-striped table-bordered">
+
+        <thead class="table-dark">
+
+            <tr>
+                <th>Cliente</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Total</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            {% for factura in facturas %}
+
+            <tr>
+
+                <td>{{ factura.cliente }}</td>
+
+                <td>{{ factura.producto }}</td>
+
+                <td>{{ factura.cantidad }}</td>
+
+                <td>
+                    ${{ "%.2f"|format(factura.precio) }}
+                </td>
+
+                <td>
+                    ${{ "%.2f"|format(factura.total) }}
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    {% else %}
+
+    <div class="alert alert-info">
+        No existen facturas registradas.
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+
+# ============================================================
+# ARCHIVO: static/css/style.css
+# ============================================================
+
+body {
+    background-color: #f5f5f5;
+}
+
+.card {
+    border-radius: 10px;
+}
+
+h1, h2 {
+    font-weight: 600;
+}
+
+.text-danger {
+    font-size: 0.9rem;
+    margin-top: 5px;
+}
+# ==========================================================
+
+T
